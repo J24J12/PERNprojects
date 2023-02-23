@@ -1,0 +1,169 @@
+part 1. Server
+
+   //Create server and database//
+
+- $cd server
+- $npm init -y
+- $npm i express cors pg jsonwebtoken bcrypt
+
+- create file index.js
+- under index.js
+const express = require("express");
+const app = express();
+const cors = require("cors");
+
+app.use(express.json()) //req.body
+app.use(cors());
+app.listen(5000)
+
+- create file database.sql
+CREATE DATABASE (name)
+CREATE TABLE users(user_id uuid, user_name, user_email, user_password)
+
+- under psql
+#\c (database) 
+#create extension if not exits "uuid-ossp";
+
+- create file db.js
+const Pool = require("pg").Pool
+
+const pool = new Pool({
+    user: "postgres",
+    password: "password",
+    port: 5432,
+    database: "(name)"
+});
+
+module.exports = pool;
+
+   //Build Register Routes//
+
+- Create folder 'routes' under folder create file jwtAuth.js
+- add in route to index.js
+app.use("/auth", require("./routes/jwtAuth"));
+
+- under jwtAuth.js create a router.post to register new users, 
+
+   //Create jwt generator//
+
+- $npm i dotenv
+- create file .env
+- create secretkey
+- create folder 'utils' under folder create file jwtGenerator.js
+- create function jwtGenerator create payload that takes and save user_id then sign the token taking payload, secreykey and expiry date 
+- add const jwtGenerator to jwtAuth.js
+
+   //Build Login Routes//
+
+- under jwtAuth.js create router.post to valid existing users
+
+   //Create jwt middleware//
+
+- Create folder 'middleware' under folder create file authorization.js 
+- module.exports to check if jwtToken is authorize
+- create another file validinfo.js
+- module.exports to check if email is valid
+- add const validinfo to jwtAuth.js and validinfo to register and login
+
+   //Build Private Routes//
+- add router.get("/is-verify")... to jwtAuth.js
+- add const authorization to jwtAuth.js authorization to /is-verify
+- create file Dashboard.js under routes folder
+- add in route to index.js
+app.use("/dashboard", require("./routes/dashboard"));
+- under Dashboard.js const authorization
+- router.get("/", authorization)... to check if req.user has the payload
+
+
+
+
+
+
+
+
+
+
+
+
+part 2. Client
+
+   //SETTING UP Client//
+
+- $npx create-react-app client
+
+- under src delete all except App.css,App.js,index.css,index.js
+
+- $cd client && npm start
+
+- Under App.js delete everything inside App() function
+- import React, {Fragment, useState, useEffect} from 'react';
+
+- under public/index.html add in bootstrap 4 CSS above <title>React APP</title>
+
+- Create folder 'components' under folder create files
+- 'Login.js', 'Register.js', 'Dashboard.js'
+
+- new terminal $npm i react-router-dom react-toastify
+
+   //SETTING UP react router dom//
+- under App.js
+- import {BrowserRouter as Router,Routes,Route,Navigate,} from "react-router-dom";
+
+- under Login,Register,Dashboard (**)
+- import React, {Fragment, useState} from 'react'; //add useEffect for Dashboard
+- const (**) = () => {}
+- export default (**);
+
+- under App.js
+- import (**) from "./components/(**)"
+- under App function 
+ return (
+  <Fragment>
+   <Router>
+    <div className="container"> 
+     <Routes>
+      <Route exact path = "/login" element={<Login/>: <Navigate to = "/dashboard"/>} />
+      <Route exact path = "/register" element={<Register/>: <Navigate to = "/login"/>} />
+      <Route exact path = "/dashboard" element={<Dashboard/>: <Navigate to = "/login"/>} />
+     </Routes>
+    </div>
+   </Router>
+  <Fragment>
+
+   //Authentication//
+
+- above return 
+- const [isAuthenticated, setIsAuthenticated] = useState(false);
+- const setAuth = (boolean) => {setIsAuthenticated(boolean)};
+- change route path to (add in isAuthenticated and setAuth)
+<Route exact path="/login" element={!isAuthenticated ? (<Login setAuth={setAuth} />) : (<Navigate to="/dashboard" />)}/>
+<Route exact path="/register" element={!isAuthenticated ? (<Register setAuth={setAuth} />) : (<Navigate to="/login" />)}/>
+<Route exact path="/dashboard" element={isAuthenticated ? (<Dashboard setAuth={setAuth} />) : (<Navigate to="/login" />)}/>
+
+   //Register//
+
+- under const Register return add fragment, h1, form, input(email,password,name), button, link (import { Link } from "react-router-dom";)
+- above return create usestate for inputs, onchange and onsubmitform
+- onsubmit form fetch database and parseRes token for authentication and key token into localstorage
+
+   //Login//
+
+- under const Login return add fragment, h1, form, input(email,password,name), button, link (import { Link } from "react-router-dom";)
+- above return create usestate for inputs, onchange and onsubmitform
+- onsubmit form fetch database and parseRes token for authentication and key token into localstorage
+
+   //Dashboard//
+
+- under const Dashboard add fragment, h1, button
+- above return create usestate(""), async function getName() to fetch the token, const logout to remove the token, useEffect(add [] to only make one requrest)
+
+   //Validate using jwt token//
+
+- under App function add in useEffect to check if person is still authenticate, async function isAuth fetch GET token
+
+   //Add notification using toastify//
+
+- import { ToastContainer } from "react-toastify";
+- import "react-toastify/dist/ReactToastify.css";
+- add <ToastContainer/> below
+- under (**) add toast.success/error to setAuth
